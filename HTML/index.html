@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Machine Learning Portfolio</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base Theme */
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #0b1120; 
+            color: #f8fafc; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            position: relative; 
+        }
+        
+        /* NEURAL GRID BACKGROUND */
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* AMBIENT LIGHTING ORBS */
+        .ambient-glow {
+            position: fixed; border-radius: 50%; filter: blur(120px); z-index: -1; opacity: 0.4;
+            animation: floatGlow 15s ease-in-out infinite alternate;
+        }
+        .glow-blue { background: #0ea5e9; width: 500px; height: 500px; top: -100px; left: -100px; }
+        .glow-red { background: #ef4444; width: 400px; height: 400px; bottom: -50px; right: -100px; animation-delay: -5s; }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 50px) scale(1.2); }
+        }
+
+        /* Glassmorphism Navbar */
+        .navbar-glass {
+            background: rgba(11, 17, 32, 0.75); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky; top: 0; z-index: 1000; padding: 15px 0;
+        }
+        .nav-link-custom {
+            color: #94a3b8; font-weight: 600; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: 0.3s;
+        }
+        .nav-link-custom:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
+        .nav-link-custom.active { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+
+        /* Sections */
+        .page-section { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Hero Section */
+        .hero { padding: 80px 0 50px; text-align: center; }
+        .hero-badge { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 8px 16px; border-radius: 50px; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; display: inline-block; margin-bottom: 20px; }
+        .hero h1 { font-weight: 800; font-size: 3.5rem; background: linear-gradient(to right, #ffffff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px; overflow: hidden; transition: 0.4s; height: 100%; display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .glass-card:hover { transform: translateY(-8px); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); }
+
+        /* Card Headers (Fixed Images) */
+        .card-img-header { height: 200px; background-size: cover; background-position: center; position: relative; }
+        .card-img-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(11,17,32,0) 0%, rgba(11,17,32,1) 100%); }
+        
+        /* FIXED PROJECT IMAGES */
+        /* Replaced Heart Image with a highly reliable medical-tech graphic */
+        .theme-heart .card-img-header { background-image: url('https://images.unsplash.com/photo-1628102491629-77858ab5721d?auto=format&fit=crop&w=800&q=80'); }
+        .theme-crop .card-img-header { background-image: url('https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=800&q=80'); }
+        .theme-laptop .card-img-header { background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800&q=80'); }
+
+        .card-body-custom { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .tech-badge { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; color: #cbd5e1; margin-right: 5px; display: inline-block; margin-bottom: 5px;}
+        
+        /* Launch Buttons */
+        .btn-launch { margin-top: auto; padding: 12px; border-radius: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; display: flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; transition: 0.3s; }
+        .theme-heart .btn-launch { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .theme-heart .btn-launch:hover { background: #ef4444; color: white; }
+        .theme-crop .btn-launch { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .theme-crop .btn-launch:hover { background: #10b981; color: #022c22; }
+        .theme-laptop .btn-launch { background: rgba(56, 189, 248, 0.1); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .theme-laptop .btn-launch:hover { background: #38bdf8; color: #0f172a; }
+
+        /* ML Education Section Styles */
+        .ml-graphic { border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; height: 250px; object-fit: cover; }
+        .ml-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .bg-supervised { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+        .bg-unsupervised { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .bg-reinforcement { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+    <div class="ambient-glow glow-blue"></div>
+    <div class="ambient-glow glow-red"></div>
+
+    <nav class="navbar-glass">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="fw-bold fs-5 text-white d-flex align-items-center gap-2">
+                <i class="bi bi-hexagon-half text-info"></i> ML_Hub
+            </div>
+            <div class="d-flex gap-2">
+                <div class="nav-link-custom active" onclick="switchTab('projects')">Machine Learning Projects</div>
+                <div class="nav-link-custom" onclick="switchTab('education')">What is ML?</div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div id="projects" class="page-section active">
+            <header class="hero">
+                <span class="hero-badge"><i class="bi bi-cpu"></i> Machine Learning Portfolio</span>
+                <h1>Deploying Intelligence.</h1>
+                <p class="lead text-secondary mx-auto mt-3" style="max-width: 600px;">
+                    A curated collection of production-ready predictive models, from clinical diagnostics to market valuations.
+                </p>
+            </header>
+
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card theme-heart">
+                        <div class="card-img-header"><div class="card-img-overlay"></div></div>
+                        <div class="card-body-custom">
+                            <h4 class="fw-bold mb-2">HeartHealth AI</h4>
+                            <p class="text-secondary small">Clinical neural diagnostics using Logistic Regression and Explainable AI (XAI) to evaluate cardiovascular risk factors.</p>
+                            <div class="mb-3">
+                                <span class="tech-badge">Python</span> 
+                                <span class="tech-badge">Flask</span> 
+                                <span class="tech-badge" style="color: #fca5a5; border-color: #ef4444;">Classification</span>
+                            </div>
+                            <a href="https://heart-disease-classification-one.vercel.app/" target="_blank" class="btn-launch">
+                                Launch Dashboard <i class="bi bi-arrow-up-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card theme-crop">
+                        <div class="card-img-header"><div class="card-img-overlay"></div></div>
+                        <div class="card-body-custom">
+                            <h4 class="fw-bold mb-2">AgroYield Predictor</h4>
+                            <p class="text-secondary small">Machine learning model engineered to forecast agricultural crop yields based on soil metrics, rainfall, and environmental data.</p>
+                            <div class="mb-3">
+                                <span class="tech-badge">Python</span> 
+                                <span class="tech-badge">Random Forest</span> 
+                                <span class="tech-badge" style="color: #6ee7b7; border-color: #10b981;">Regression</span>
+                            </div>
+                            <a href="https://predicting-crop-yields.vercel.app/" target="_blank" class="btn-launch">Launch Dashboard <i class="bi bi-arrow-up-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card theme-laptop">
+                        <div class="card-img-header"><div class="card-img-overlay"></div></div>
+                        <div class="card-body-custom">
+                            <h4 class="fw-bold mb-2">Laptop Price Predictor</h4>
+                            <p class="text-secondary small">An automated valuation pipeline that predicts accurate retail prices for laptops based on Brand, Processor tier, RAM, SSD/HDD storage, and GPU.</p>
+                            <div class="mb-3">
+                                <span class="tech-badge">Python</span> 
+                                <span class="tech-badge">XGBoost</span> 
+                                <span class="tech-badge" style="color: #bae6fd; border-color: #38bdf8;">Regression</span>
+                            </div>
+                            <a href="#" target="_blank" class="btn-launch">Launch Predictor <i class="bi bi-arrow-up-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="education" class="page-section">
+            <header class="hero pb-4">
+                <span class="hero-badge"><i class="bi bi-book"></i> Educational Guide</span>
+                <h1>Demystifying ML.</h1>
+                <p class="lead text-secondary mx-auto mt-3" style="max-width: 600px;">
+                    Machine Learning is teaching computers to learn from data rather than being explicitly programmed. Here are the three main paradigms.
+                </p>
+            </header>
+
+            <div class="row g-5 mb-5 align-items-center pb-4 border-bottom border-secondary border-opacity-25">
+                <div class="col-lg-6">
+                    <span class="ml-badge bg-supervised mb-3 d-inline-block">Type 1: Task Driven</span>
+                    <h2 class="fw-bold mb-3">Supervised Learning</h2>
+                    <p class="text-secondary">The algorithm is trained on a "labeled" dataset. This means the model acts like a student studying with an answer key. It learns the mathematical relationship between the input features (like patient symptoms or laptop specs) and the target output.</p>
+                    
+                    <div class="ps-3 border-start border-info border-2 mb-3 mt-3">
+                        <p class="text-light small fw-bold mb-2">It is divided into two main categories:</p>
+                        <ul class="text-secondary small mb-0">
+                            <li class="mb-2"><strong class="text-danger">Classification:</strong> Predicting a specific category or class.<br><em>Example: Is this patient Low Risk or High Risk for heart disease?</em></li>
+                            <li><strong class="text-success">Regression:</strong> Predicting a continuous number.<br><em>Example: What will the exact retail price of this laptop be?</em></li>
+                        </ul>
+                    </div>
+
+                    <ul class="text-secondary small mt-3">
+                        <li><strong>In my portfolio:</strong> <em>HeartHealth AI</em> uses <strong>Classification</strong>, while the <em>AgroYield Predictor</em> and <em>Laptop Predictor</em> use <strong>Regression</strong>!</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80" alt="Data Classification Graph" class="ml-graphic">
+                </div>
+            </div>
+
+            <div class="row g-5 mb-5 align-items-center flex-lg-row-reverse pb-4 border-bottom border-secondary border-opacity-25">
+                <div class="col-lg-6">
+                    <span class="ml-badge bg-unsupervised mb-3 d-inline-block">Type 2: Data Driven</span>
+                    <h2 class="fw-bold mb-3">Unsupervised Learning</h2>
+                    <p class="text-secondary">The algorithm is given data without any labels or instructions on what to do with it. The system's job is to discover hidden patterns, groupings, or structures entirely on its own.</p>
+                    <ul class="text-secondary small">
+                        <li><strong>Use Cases:</strong> Customer Segmentation, Anomaly Detection (Fraud), DNA clustering.</li>
+                        <li><strong>How it works:</strong> It groups similar data points together into "clusters".</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80" alt="Data Clustering" class="ml-graphic">
+                </div>
+            </div>
+
+            <div class="row g-5 mb-5 align-items-center">
+                <div class="col-lg-6">
+                    <span class="ml-badge bg-reinforcement mb-3 d-inline-block">Type 3: Environment Driven</span>
+                    <h2 class="fw-bold mb-3">Reinforcement Learning</h2>
+                    <p class="text-secondary">An "agent" learns how to behave in an environment by performing actions and seeing the results. It operates on a reward system—getting positive feedback for good actions and negative feedback for bad ones, slowly learning the optimal strategy.</p>
+                    <ul class="text-secondary small">
+                        <li><strong>Use Cases:</strong> Self-Driving Cars, Chess AI, Robotics.</li>
+                        <li><strong>Analogy:</strong> Training a dog with treats!</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80" alt="AI Logic Map" class="ml-graphic">
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center py-4 border-top border-secondary border-opacity-25 mt-5">
+            <p class="small text-secondary mb-2">Engineered by Kamil Perwez</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="#" class="text-secondary text-decoration-none fs-5"><i class="bi bi-github"></i></a>
+                <a href="#" class="text-secondary text-decoration-none fs-5"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-link-custom').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
