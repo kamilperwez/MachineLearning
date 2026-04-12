@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HeartHealth AI | Clinical Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+
+    <style>
+        body { 
+            background: linear-gradient(rgba(20, 5, 5, 0.9), rgba(40, 10, 15, 0.95));
+            background-size: cover; background-attachment: fixed;
+            color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .fixed-bg-animation {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            z-index: -1; pointer-events: none; opacity: 0.15;
+        }
+        @keyframes heartbeat-bg {
+            0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.2)); }
+            14% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(239, 68, 68, 0.6)); }
+            28% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.2)); }
+            42% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(239, 68, 68, 0.6)); }
+            70% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.2)); }
+        }
+        @keyframes data-flow { 0% { stroke-dashoffset: 1000; } 100% { stroke-dashoffset: 0; } }
+        
+        .holo-heart-bg { animation: heartbeat-bg 2s infinite linear; width: 90vh; height: auto; }
+        .heart-path-bg { fill: none; stroke: #ef4444; stroke-width: 2; stroke-dasharray: 30 15; animation: data-flow 30s linear infinite; }
+
+        .navbar-custom { background: rgba(30, 10, 15, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255, 50, 50, 0.2); }
+        .glass-panel { 
+            background: rgba(40, 15, 20, 0.75); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 100, 100, 0.15); border-radius: 16px; padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            transition: background 0.5s ease;
+        }
+        .panel-header { border-bottom: 1px solid rgba(255, 100, 100, 0.2); padding-bottom: 15px; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; font-size: 0.9rem; color: #fca5a5; }
+
+        .form-label { font-size: 0.8rem; font-weight: 700; color: #fecaca; }
+        .form-control, .form-select { background: rgba(20, 5, 5, 0.6); border: 1px solid #7f1d1d; color: white; padding: 12px; }
+        .form-control:focus, .form-select:focus { background: rgba(30, 5, 5, 0.9); border-color: #ef4444; color: white; box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.4); }
+        .info-icon { color: #fca5a5; cursor: pointer; font-size: 0.9rem; margin-left: 5px; transition: 0.2s; }
+        .info-icon:hover { color: #ffffff; }
+
+        .tip-card { background: rgba(30, 10, 15, 0.8); border-left: 4px solid #ef4444; padding: 15px; margin-bottom: 12px; border-radius: 8px; font-size: 0.9rem; }
+        .api-box { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* RESTORED CONFUSION MATRIX CSS */
+        .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .matrix-cell { padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,100,100,0.1); }
+        .true-pos { border-color: #ef4444; color: #ef4444; } .true-neg { border-color: #10b981; color: #10b981; }
+
+        model-viewer { width: 100%; height: 450px; background-color: transparent; --poster-color: transparent; }
+    </style>
+</head>
+<body>
+
+    <div class="fixed-bg-animation">
+        <svg class="holo-heart-bg" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <path class="heart-path-bg" d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"/>
+            <path stroke="rgba(239, 68, 68, 0.15)" stroke-width="2" fill="none" d="M256 96.5 V 470 M 100 200 H 412 M 150 300 H 362" />
+        </svg>
+    </div>
+
+    <nav class="navbar navbar-custom py-3 mb-4 shadow-lg">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1 text-white fw-bold">
+                <i class="bi bi-heart-pulse-fill text-danger fs-3 me-2"></i> HeartHealth AI | Clinical System
+            </span>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-danger px-3 py-2 border border-light">Logistic Regression: Active</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="api-box shadow">
+                    <div>
+                        <h6 class="mb-1 text-white fw-bold">
+                            <i class="bi bi-cloud-haze2 text-success me-2"></i> Live Environmental Cardiac Risk
+                            <i class="bi bi-info-circle info-icon text-success ms-1" data-bs-toggle="tooltip" title="Particulate Matter (PM2.5) enters the bloodstream, causing systemic inflammation which directly increases the risk of heart attacks and arrhythmias."></i>
+                        </h6>
+                        <span class="small text-light opacity-75">Atmospheric pollution tracking (PM2.5) sourced via Open-Meteo API.</span>
+                    </div>
+                    <div class="text-end">
+                        <h4 class="mb-0 text-success fw-bold">{{ env.pm25 }} µg/m³</h4>
+                        <span class="badge bg-dark border border-success text-success">{{ env.risk }} Risk</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-7">
+                <div class="glass-panel h-100" {% if alert_class == 'success' %} style="background: rgba(220, 38, 38, 0.35); border-color: #ef4444;" {% endif %}>
+                    <div class="panel-header"><i class="bi bi-sliders text-danger me-2"></i> Patient Parameters</div>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger shadow-sm"><i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}</div>
+                    {% endif %}
+
+                    <form action="/predict" method="post" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Age <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Range: 1 to 120 years. Age is a primary baseline risk factor."></i></label>
+                            <input type="number" name="age" class="form-control" min="1" max="120" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Biological Sex <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Sex assigned at birth. Hormonal differences impact cardiac disease manifestation."></i></label>
+                            <select name="sex" class="form-select">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Chest Pain Category (CP) <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Typical: Heart-related. Atypical: Vague symptoms. Non-anginal: Musculoskeletal."></i></label>
+                            <select name="cp" class="form-select">
+                                <option value="typical angina">Typical Angina (Severe)</option>
+                                <option value="atypical angina">Atypical Angina (Moderate)</option>
+                                <option value="non-anginal">Non-Anginal (Mild)</option>
+                                <option value="asymptomatic">Asymptomatic (None)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Resting BP (trestbps) <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Resting blood pressure in mm Hg. Normal is < 120. Used for secondary health analysis."></i></label>
+                            <input type="number" name="trestbps" class="form-control" min="50" max="250" placeholder="e.g. 120" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cholesterol <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Serum cholesterol (mg/dl). Optimal < 200. High > 240."></i></label>
+                            <input type="number" name="chol" class="form-control" min="100" max="600" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Max Heart Rate <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Max HR achieved during test (Thalch). Range: 60-220 bpm."></i></label>
+                            <input type="number" name="thalch" class="form-control" min="60" max="220" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">ST Dep. (Oldpeak) <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="ECG ST depression induced by exercise vs rest. High value = blocked arteries."></i></label>
+                            <input type="number" step="0.1" name="oldpeak" class="form-control" min="0" max="6.2" value="0.0">
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-danger w-100 py-3 fw-bold shadow-lg text-uppercase">
+                                <i class="bi bi-cpu-fill me-2"></i> Execute Neural Diagnostics
+                            </button>
+                        </div>
+                    </form>
+                    <div class="mt-4 p-3 rounded position-relative overflow-hidden" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,100,100,0.2); height: 180px;">
+    
+    <div class="scanline"></div>
+
+    <div class="d-flex justify-content-between mb-2">
+        <h6 class="fw-bold text-danger m-0" style="font-size: 0.6rem; letter-spacing: 1px;">
+            <i class="bi bi-radar"></i> BIO-DIGITAL SCANNER
+        </h6>
+        <span class="text-success fw-bold" style="font-size: 0.5rem; font-family: monospace;">ENCRYPTED_LINK: ACTIVE</span>
+    </div>
+
+    <div class="row g-1 opacity-50" style="font-family: monospace; font-size: 0.55rem; color: #fca5a5;">
+        <div class="col-3">0x4F 2A 99</div><div class="col-3">A1 FF 02</div><div class="col-3">88 BC 11</div><div class="col-3">D2 00 5A</div>
+        <div class="col-3">NODE_SYNC</div><div class="col-3">VALVE_01</div><div class="col-3">BPM_FLOW</div><div class="col-3">RT_COR_A</div>
+        <div class="col-3">77.22.01</div><div class="col-3">99.00.FF</div><div class="col-3">A2.BC.D1</div><div class="col-3">00.FF.AA</div>
+        <div class="col-3">V_STRESS</div><div class="col-3">L_VENT_A</div><div class="col-3">R_ATRIUM</div><div class="col-3">AO_ARCH_S</div>
+        <div class="col-3">0x99 FE 11</div><div class="col-3">0xAA BB CC</div><div class="col-3">0x11 22 33</div><div class="col-3">0x00 00 FF</div>
+    </div>
+
+    <div class="position-absolute top-0 end-0 p-1"><i class="bi bi-plus-lg text-danger" style="font-size: 10px;"></i></div>
+    <div class="position-absolute bottom-0 start-0 p-1"><i class="bi bi-plus-lg text-danger" style="font-size: 10px;"></i></div>
+</div>
+
+<style>
+    .scanline {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: rgba(255, 100, 100, 0.5);
+        box-shadow: 0 0 15px rgba(255, 100, 100, 0.8);
+        animation: scan 3s linear infinite;
+        z-index: 2;
+    }
+
+    @keyframes scan {
+        0% { top: 0; }
+        100% { top: 100%; }
+    }
+</style>
+                </div>
+                
+            </div>
+
+            <div class="col-lg-5">
+                <div class="glass-panel h-100">
+                    <div class="panel-header"><i class="bi bi-clipboard2-pulse text-danger me-2"></i> Diagnostic Output</div>
+                    
+                    {% if show_results %}
+                        <div class="text-center mb-4 p-4 rounded shadow-sm" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,100,100,0.2);">
+                            <p class="text-secondary small text-uppercase fw-bold mb-2">Algorithm Classification &mdash; {{ category }}</p>
+                            <h3 class="fw-bold text-{{ alert_class }} m-0">{{ risk_level }}</h3>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="text-white fw-bold small text-uppercase mb-2">Patient Data Summary</h6>
+                            <div class="table-responsive rounded shadow-sm" style="border: 1px solid rgba(255,100,100,0.2);">
+                                <table class="table table-dark table-sm table-striped m-0" style="background: transparent;">
+                                    <tbody>
+                                        {% for key, value in user_data.items() %}
+                                        <tr>
+                                            <td class="text-light opacity-75 ps-3 py-2">{{ key }}</td>
+                                            <td class="text-end fw-bold pe-3 py-2 text-info">{{ value }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="text-white fw-bold mb-3 small text-uppercase border-bottom border-danger pb-2">
+                                <i class="bi bi-shield-plus text-danger me-2"></i> Clinical Advice
+                            </h6>
+                            {% for tip in tips %}
+                                <div class="tip-card text-light shadow-sm">{{ tip|safe }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top border-danger">
+                            <h6 class="text-white fw-bold small text-uppercase mb-2">Algorithm Validation Matrix</h6>
+                            <p class="small text-light opacity-75 mb-2">Historical subset testing performance.</p>
+                            <div class="matrix-grid">
+                                <div class="matrix-cell true-neg">
+                                    <div class="fs-4">45</div><div style="font-size: 0.65rem; text-transform: uppercase;">True Negative</div>
+                                </div>
+                                <div class="matrix-cell text-secondary">
+                                    <div class="fs-4">4</div><div style="font-size: 0.65rem; text-transform: uppercase;">False Positive</div>
+                                </div>
+                                <div class="matrix-cell text-secondary">
+                                    <div class="fs-4">2</div><div style="font-size: 0.65rem; text-transform: uppercase;">False Negative</div>
+                                </div>
+                                <div class="matrix-cell true-pos">
+                                    <div class="fs-4">41</div><div style="font-size: 0.65rem; text-transform: uppercase;">True Positive</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <div class="d-flex flex-column align-items-center justify-content-center h-100 py-5 text-center opacity-50">
+                            <i class="bi bi-activity display-1 mb-3 text-danger"></i>
+                            <h5 class="fw-bold text-light">Awaiting Telemetry</h5>
+                            <p class="small">Input data to generate risk profile.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="glass-panel text-center">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 border-bottom border-danger pb-3">
+                        <h5 class="fw-bold text-danger m-0 mb-3 mb-md-0"><i class="bi bi-box-fill me-2"></i> 3D Clinical Anatomy</h5>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="btnradio" id="btn-heart" autocomplete="off" checked onclick="switchModel('heart')">
+                            <label class="btn btn-outline-danger btn-sm px-4" for="btn-heart">Heart View</label>
+                            <input type="radio" class="btn-check" name="btnradio" id="btn-cardio" autocomplete="off" onclick="switchModel('cardio')">
+                            <label class="btn btn-outline-danger btn-sm px-4" for="btn-cardio">Cardio System</label>
+                        </div>
+                    </div>
+                    <p class="small text-light opacity-75 mb-4">Native 3D WebGL Rendering. Click and drag to rotate, scroll to zoom.</p>
+                    <div class="rounded overflow-hidden shadow-lg" style="border: 1px solid rgba(255,100,100,0.3); background: rgba(0,0,0,0.4);">
+                        <model-viewer 
+                            id="medical-viewer"
+                            src="{{ url_for('static', filename='heart.glb') }}" 
+                            alt="A 3D model of a heart" 
+                            auto-rotate 
+                            camera-controls 
+                            shadow-intensity="1"
+                            exposure="1.2"
+                            environment-image="neutral">
+                        </model-viewer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        function switchModel(type) {
+            const viewer = document.getElementById('medical-viewer');
+            if (type === 'heart') {
+                viewer.src = "{{ url_for('static', filename='heart.glb') }}";
+            } else if (type === 'cardio') {
+                viewer.src = "{{ url_for('static', filename='cardio.glb') }}";
+            }
+        }
+    </script>
+</body>
+</html>
